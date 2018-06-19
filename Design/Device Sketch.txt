@@ -1,0 +1,7 @@
+DEVICES
+
+POLLING:
+	READ			WRITE
+check DBA bit		check DBA bit
+if set -> data avail	if set -> data buffer avail for output
+LD.B __,R0  ;DATA	ST.B R6,__

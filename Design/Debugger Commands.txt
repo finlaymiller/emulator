@@ -1,0 +1,13 @@
+ECED3403 ASSIGNMENT 2
+DEBUGGER COMMANDS
+FINLAY MILLER B00675696
+JUNE 19TH, 2018
+
+run			Run until program end or breakpoint
+ins [ADDR|Rn] BYTE	Insert provided byte into memory location or register
+rdb  ADDR		Print byte at memory location to screen
+rdr			Print registers to screen
+dump			Print memory to screen
+reset			Reinitialize emulator
+^C			Pause emulator
+quit			Exit emulator

@@ -1,0 +1,120 @@
+ECED3403 ASSIGNMENT 2
+STRUCTURED ENGLISH PROGRAM WALKTHROUGH
+FINLAY MILLER B00675696
+JUNE 19TH, 2018
+
+* This section uses complex data types defined in the data dictionary 	*
+* and referred to as "object". I realize that C isn't an object-	*
+* oriented language.							*
+
+1. Setup
+1.1 Initialization
+	Create CPU and debugger objects
+	Set flags to starting values
+	Allocate memory space
+	Initialize memory
+	Allocate register space
+	Initialize registers
+	Prompt user for input filename
+	
+	GO TO 2
+
+1.2 Loading
+	If unable to open input file: exit
+	Set loading flag to 1
+	Create S record object, and an array of S records
+	While the current line is not the end of the file:
+		Read the current line
+char[1]		Set the second character  to the S record type
+char[2:3]	Set the next 2 characters to the S record length
+char[4:7]	Set the next 4 characters to the S record address
+char[8:len-2]	Set the next N characters to the S record data
+char[len-1:len]	Set the last 2 characters to the S record checksum
+		If S record type is not 0: verify the checksum value
+		
+		Add parsed S record to list
+		Move to next line of input file
+	Get the first record of the S record list
+	While the current S record is not the last:
+		Get the program memory address specified by the current record
+		Convert the current records data to big-endian decimal format
+		Send the converted data to the specified program memory address
+		Get the next record
+	Set program counter (PC) to location specified in S0 record, or 0100 by default
+	Set loading flag to 0
+	
+	GO TO 3
+
+1.3 Start
+	Notify user that initialization & loading were completed
+	Prompt user for other commands
+		e.g. breakpoints, insert/read 
+		data from registers, dump memory
+	If breakpoint command is detected:
+		Go to 6a.
+	If insert data command is detected: 
+		Go to 6b.
+	If read data command is detected:
+		Go to 6c.
+	If dump memory command is detected:
+		Go to 6d.
+	If display registers command is detected:
+		Go to 6e.
+	Prompt user to start or quit
+	If user inputs start command:
+		GO TO 2
+	If user inputs quit command:
+		GO TO 6f.
+
+2. CPU
+2.1 Fetch
+	If PC is all 0s
+		Set PC to location 100
+	Get data stored at PC 
+
+6. Debugger Commands
+6a. Set Breakpoint
+	Set global "breakpoint set" flag
+	Create breakpoint object
+	Identify type:
+		Memory Location
+		Clock
+	Store type in global object
+	Store data in global object
+		>(mem address, # of clock pulses)
+	
+	RETURN
+
+6b. Insert Data
+	Check whether first argument is an address or a register
+	Check to make sure the data is 1 byte
+	Write the provided data to the provided address of program memory
+		or register
+
+	RETURN
+
+6c. Read Data
+	Get byte stored in program memory at provided address
+	Write the gotten byte to the screen
+
+	RETURN
+
+6d. Dump Memory
+	Write register contents to screen
+	Get the first byte of memory
+	While the current byte is not the last byte of memory:
+		Write the current byte to the screen
+		Get the next byte
+	RETURN
+
+6e. Display Registers
+	Write register contents to screen
+
+	RETURN
+
+6f. Quit
+	Write memory, registers, and flags to output file
+	Clear all memory and registers
+	Reset flags
+	
+	END
