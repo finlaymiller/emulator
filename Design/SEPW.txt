@@ -7,6 +7,7 @@ JUNE 19TH, 2018
 * and referred to as "object". I realize that C isn't an object-	*
 * oriented language.							*
 
+
 1. Setup
 1.1 Initialization
 	Create CPU and debugger objects
@@ -67,10 +68,38 @@ char[len-1:len]	Set the last 2 characters to the S record checksum
 		GO TO 6f.
 
 2. CPU
-2.1 Fetch
 	If PC is all 0s
 		Set PC to location 100
-	Get data stored at PC 
+
+	GO TO 2.1
+
+2.1 Fetch
+	Ask bus politely for the data stored at the PC
+	Once the data is received, send it to the decoder
+	Increment PC
+	
+	GO TO 2.2
+
+2.2 Decode
+	Check decoding table for current instruction
+	Confirm that the correct number of operands was provided
+	Pass opcode and operands to executer
+
+	GO TO 2.3
+
+2.3 Execute
+	Extremely opcode dependent
+
+	GO TO 2.4
+
+2.4 Maintenance
+	Increment clock
+	Send current clock & PC to debugger
+		GO TO XX
+	Check for ^C or signals
+
+	GO TO 2.1
+	
 
 6. Debugger Commands
 6a. Set Breakpoint
