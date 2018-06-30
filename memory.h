@@ -18,17 +18,22 @@ unsigned int *DEVICES;
 unsigned int *CODE;
 unsigned int *IVT;
 
+// Memory setup
+#define MAX_BYTE_SIZE (1<<16)	// 65536
+#define MAX_WORD_SIZE (1<<15)	// 32768
 
-// Memory
-union mem
-{
-	unsigned int bytemem;
-	unsigned int wordmem;
+union Memory {
+	unsigned char byte[MAX_BYTE_SIZE];
+	unsigned short word[MAX_WORD_SIZE];
 };
 
+// make memory components accessible program-wide
+extern union Memory memory;
+extern unsigned short regfile[8];
+extern unsigned short MDR;
+extern unsigned short MAR;
+
 void init_mem();
-void uninit_mem();
-
-
 
 #endif
+

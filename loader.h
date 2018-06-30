@@ -15,6 +15,8 @@
 #include <errno.h>
 #include <stdbool.h>
 
+#include "main.h"
+
 #define INPUT_SIZE 1000
 #define S_REC_SIZE 256
 
@@ -44,7 +46,11 @@ char *err_diag_s[] =
 	(char *) "\nInvalid S rec - error in checksum",
 };
 
-struct S_Record read_record(char input[]);
+unsigned short regfile[8];
+
+typedef struct S_Record S_Record;
+
+S_Record read_record(char input[]);
 void srec_error(enum SREC_ERRORS err, char srec[]);
 int h2d(char *h);
 

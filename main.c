@@ -25,7 +25,17 @@ int main(void)
 	// setup timer
 	clock_t start = clock();
 
-	status = debugger();
+	Emulator *emulator;
+	CPU *cpu = NULL;
+	Debugger *debugger = NULL;
+	Storage *storage = NULL;
 
-	return 0;
+	status = run_debugger(emulator);
+
+	// end timer & print runtime
+	clock_t end = clock;
+	double total = (double)start - end / CLOCKS_PER_SEC;
+	printf("\nProgram completed in %lf seconds.", total);
+
+	return status;
 }

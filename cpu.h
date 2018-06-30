@@ -19,13 +19,32 @@
 typedef struct CPU
 {
 	bool running;
-
-	unsigned int pc, sp;
-	unsigned int sr;
-	unsigned int cg2;
-
-	unsigned int r0, r1, r2, r3;
+	bool sleeping;
+	unsigned int clock;
 };
 
+// instruction types
+enum insttype
+{
+	ALU,
+	BRANCHING,
+	LDSTMOV,
+	BIT
+};
+
+// instruction mnemonics
+enum instmnem
+{
+	LD, ST, LDR, STR, MOVL, MOVLZ, MOVH,
+	BL, BEQBZ, BNEBNZ, BCBHS, BNCBLO, BN,
+	BGE, BLT, BAL, ADD, ADDC, SUB, SUBC,
+	DADD, CMP, XOR, AND, BIT, BIC, BIS,
+	MOV, SWAP, SRA, RRC, SWPB, SXT
+};
+
+// function declarations
+void fetch(void);
+void decode(void);
+void execute(void);
 
 #endif

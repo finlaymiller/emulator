@@ -12,13 +12,7 @@
 
 void init_mem()
 {
-	union mem memory;
+	union Memory mem;
 
-	memory.bytemem = 65536;
-	memory.wordmem = 32768;
-}
 
-void uninit_mem()
-{
-	free(memory);
 }

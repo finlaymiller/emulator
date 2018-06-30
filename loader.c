@@ -8,9 +8,47 @@
 
 #include "loader.h"
 
-#define DEBUG
+#define DEBUGGING
 
-struct S_Record read_record(char input[])
+void loader(char ifile[], char dfile[])
+{
+	/*
+	Purpose:    Reads and loads records from input files into memory
+	Input:      Input files, both S records and device settings
+	Output:     
+	Flow:		- Read file line by line
+				- For each line:	parse into a record object
+				-					load into memory
+	*/
+
+	// SET LOADING FLAG
+
+	FILE *f = fopen(ifile, "r");
+	char line[S_REC_SIZE];
+
+	// handle S records
+	// read file line by line
+	while (fgets(line, sizeof(line), f) != NULL)
+	{
+		// remove trailing newline
+		strtok(line, '\n');
+		// parse s record into s record struct
+		S_Record rec = read_record(line);
+		// load s record into memory
+		load_record(rec);
+	}
+
+	// handle device files
+	if (strlen(dfile) > 0)
+	{
+		printf("\nDevice support not yet added.");
+	}
+
+	fclose(f);
+	// CLEAR LOADING FLAG
+}
+
+S_Record read_record(char input[])
 {
 	/*
 	Purpose:    Parses string into record components
@@ -18,7 +56,7 @@ struct S_Record read_record(char input[])
 	Output:     S record object with string data in fields
 	*/
 
-    struct S_Record rec;
+    S_Record rec;
 
 	// access variables
 	unsigned int i;
@@ -56,10 +94,6 @@ struct S_Record read_record(char input[])
 		// add byte to memory
 		checksum += byte & 0xFF;
 
-#ifdef DEBUG
-		printf("%2x", byte);
-#endif
-
 		data += byte;
 		pos += 2;
 	}
@@ -73,6 +107,55 @@ struct S_Record read_record(char input[])
 		srec_error(BAD_CHECKSUM, input);
 
 	return rec;
+}
+
+void load_record(S_Record rec)
+{
+	/*
+	Purpose:    loads records from input files into memory
+	Input:      S record to load
+	Output:
+	Flow:		- Get high and low bytes
+				- Switch order to Big Endian
+				- Convert to decimal
+				- Load to memory
+	*/
+
+	unsigned int address = rec.address;
+
+	if (rec.type == 1)
+	{
+		char byteH[3], byteL[3];
+		int pos = 0;
+
+		// stop at count/2 because we move in 2 character increments
+		for (int i = 0; i < (rec.count / 2); i++)
+		{
+			// read bytes
+			sscanf_s(rec.data + pos, "%2s%2s", &byteL, &byteH, 2);
+			// add null terminators
+			byteL[2] = '\0';
+			byteH[2] = '\0';
+
+			// load bytes
+			memory.byte[address] = (unsigned char)h2d(byteL);
+			memory.byte[address + 1] = (unsigned char)h2d(byteH);
+
+			// move to next word
+			pos += 4;
+			address += 2;
+		}
+	}
+	else if (rec.type == 9)
+	{
+		regfile[7] = (unsigned short)address;
+	}
+#ifdef DEBUGGING
+	else if (rec.type == 0)
+	{
+		printf("\nLoading from file %s", (unsigned short)rec.data);
+	}
+#endif
 }
 
 void srec_error(enum SREC_ERRORS err, char srec[])
