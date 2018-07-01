@@ -1,0 +1,33 @@
+emulator = debugger + cpu
+debugger = status flags + breakpoints
+status flags = running + signal found
+	* fairly self explanatory I think *
+	Format: int
+breakpoints = amount + array + next
+	Format: int
+amount = * amount of breakpoints currently created (size of array) *
+array = * array of all breakpoints *
+next = * next break point to check for *
+cpu = running flag + registers + clock
+registers = r[0-5] + r6 + r7
+	Format: int
+	* All ints other than than the PSW which is a composite detailed below *
+r6 = reserved + priority + overflow + sleep + negative + zero + carry
+	Format: int
+clock = * global counter that increases with each action in the CPU *
+	Format: int
+memory = total + code memory + data memory + device memory + interrupt memory
+	Format = int
+	* Each of these is a pointer to a certain section of memory *
+total = * pointer to 0xFFFF * 
+code memory = * pointer to the end of code memory *
+data memory = * pointer to the end of data memory *
+device memory = * pointer to the end of device memory * 
+interrupt memory = * pointer to the beginning of the interrupt vector table *
+device = io + state + overflow + speed + time left + data
+io = * bit for whether the device is for input or output *
+state = * bit for whether the device is waiting for a response from the cpu *
+overflow = * bit for when there is a data overflow *
+speed = * int for the time it takes to write an output *
+time left = * time remaining to finish current output. Will be connected to the cpu clock *
+data = * byte currently stored in the device *

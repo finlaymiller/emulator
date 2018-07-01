@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /*
 - Emulator of the X-Makina ISA
 - ECED3403 Assignment 2
@@ -438,4 +439,17 @@ enum instMnem decode_REGCON(void)
 			return SRA;
 		}
 	}
+=======
+/*
+- Emulator of the X-Makina ISA
+- ECED3403 Assignment 2
+- CPU mainline
+- Finlay Miller B00675696
+- 29 June 2018
+*/
+
+void fetch(void)
+{
+
+>>>>>>> 278da0870bc211b7e3ccb4e0cda1249e0ec582e5
 }
