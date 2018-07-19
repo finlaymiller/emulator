@@ -1,455 +1,246 @@
-<<<<<<< HEAD
 /*
 - Emulator of the X-Makina ISA
 - ECED3403 Assignment 2
 - CPU mainline
 - Finlay Miller B00675696
-- 01 JULY 2018
+- 19 July 2018
 */
 
-void fetch(void)
+#include "cpu.h"
+#define DEBUG
+
+void run(Emulator *emulator)
 {
-    MAR = regfile[PC];
+	/*
+	Purpose:	Runs fetch-decode-execute-check cycle
+	Input:      Number of memory lines to run through
+	Output:     None
+	*/
 
-    // read from PC & store in instruction register
-    bus(MAR, MDR, WORD, READ);
-    IR = MDR;
+	// create some fresh local pointers
+	CPU *cpu = emulator->cpu;
+	Debugger *deb = emulator->debugger;
 
-    printf("\nFetching memory address: 0x%x\t|\tcontents: 0x%x\n", MAR, MDR);
+	cpu->END = 200;
+	printf("\nRunning until time %d", cpu->END);
 
-    regfile[PC] += 2;
+	debug(emulator);
+
+	bool waiting_for_signal = true;
+	cpu->running = true;
+
+	while (cpu->SYSCLK <= cpu->END)
+	{
+		fetch(emulator);
+		decode(emulator);
+		execute(emulator);
+		maintenance(emulator);
+	}
+
+	cpu->running = false;
+	getchar(); getchar();
+	return;
 }
 
-void decode(void)
+void fetch(Emulator *emulator)
 {
-    enum instType decodetype = decode_type();
-    iMnemonic = decode_mnemonic(decodetype);
+	/*
+	Purpose:	Retrieve word from memory
+	Input:      None, but reads from PC
+	Output:     None, but PC is modified and bus is called
+	*/
+
+	MAR = PC;
+
+#ifdef DEBUG
+	printf("\n\nFETCHING FROM LOCATION 0x%x", MAR);
+#endif // !DEBUG
+
+	// read from PC & store in instruction register
+	bus(emulator, WORD, READ);
+	IR = MBR;
+
+#ifdef DEBUG
+	printf("\nmemory[PC/2] = 0x%x\tIR = "PRINTF_BINARY_PATTERN_INT16,memory.word[PC/2], PRINTF_BYTE_TO_BINARY_INT16(IR));
+#endif // !DEBUG
+
+	// increment PC, ensuring that address is even
+	PC += 2;
+	SET_BIT(PC, 0, 0);
+	
+	return;
 }
 
-void execute (void)
+void decode(Emulator *emulator)
 {
-    printf("\n");
-    
-    	switch (iMnemonic) {
+	/*
+	Purpose:	Identify opcode and operands contained in the IR
+	Input:      None
+	Output:     None
+	*/
+	instruction = decode_inst(emulator);
+
+#ifdef DEBUG
+	printf("\n\nDECODING...\nInstruction:");
+	print_alias(instruction);
+#endif
+
+	return;
+}
+
+void execute(Emulator *emulator)
+{
+	/*
+	Purpose:	Perform operation specified by opcode & operands
+	Input:      None, but reads decoded instruction
+	Output:     None
+	*/
+
+	switch (instruction) {
 	case LD:
-		printf("Decoded: LD\n");
-		//executeLD();
+		execute_LDST(emulator);
 		break;
 	case ST:
-		printf("Decoded: ST\n");
-		//executeST();
+		execute_LDST(emulator);
 		break;
 	case LDR:
-		printf("Decoded: LDR\n");
-		//executeLDR();
+		execute_LDRSTR(emulator);
 		break;
 	case STR:
-		printf("Decoded: STR\n");
-		//executeSTR();
+		execute_LDRSTR(emulator);
 		break;
 	case MOVL:
-		printf("Decoded: MOVL\n");
-		//executeMOVL();
+		execute_MOV(emulator);
 		break;
 	case MOVH:
-		printf("Decoded: MOVH\n");
-		//executeMOVH();
+		execute_MOV(emulator);
 		break;
 	case MOVLZ:
-		printf("Decoded: MOVLZ\n");
-		//executeMOVLZ();
+		execute_MOV(emulator);
 		break;
 	case BL:
-		printf("Decoded: BL\n");
-		//executeBL();
+		execute_BRA(emulator);
 		break;
-	case BEQ:
-		printf("Decoded: BEQ\n");
-		//executeBEQ();
+	case BEQBZ:
+		execute_BRA(emulator);
 		break;
-	case BNE:
-		printf("Decoded: BNE\n");
-		//executeBNE();
+	case BNEBNZ:
+		execute_BRA(emulator);
 		break;
-	case BC:
-		printf("Decoded: BC\n");
-		//executeBC();
+	case BCBHS:
+		execute_BRA(emulator);
 		break;
-	case BNC:
-		printf("Decoded: BNC\n");
-		//executeBNC();
+	case BNCBLO:
+		execute_BRA(emulator);
 		break;
 	case BN:
-		printf("Decoded: BN\n");
-		//executeBN();
+		execute_BRA(emulator);
 		break;
 	case BGE:
-		printf("Decoded: BGE\n");
-		//executeBGE();
+		execute_BRA(emulator);
 		break;
 	case BLT:
-		printf("Decoded: BLT\n");
-		//executeBLT();
+		execute_BRA(emulator);
 		break;
 	case BAL:
-		printf("Decoded: BAL\n");
-		//executeBAL();
+		execute_BRA(emulator);
 		break;
 	case ADD:
-		printf("Decoded: ADD\n");
-		//executeADD();
+		execute_ALU(emulator);
 		break;
 	case ADDC:
-		printf("Decoded: ADDC\n");
-		//executeADDC();
+		execute_ALU(emulator);
 		break;
 	case SUB:
-		printf("Decoded SUB\n");
-		//executeSUB();
+		execute_ALU(emulator);
 		break;
 	case SUBC:
-		printf("Decoded: SUBC\n");
-		//executeSUBC();
+		execute_ALU(emulator);
 		break;
 	case DADD:
-		printf("Decoded: DADD\n");
-		//executeDADD();
+		execute_ALU(emulator);
 		break;
 	case CMP:
-		printf("Decoded: CMP\n");
-		//executeCMP();
+		execute_ALU(emulator);
 		break;
 	case XOR:
-		printf("Decoded: XOR\n");
-		//executeXOR();
+		execute_ALU(emulator);
 		break;
 	case AND:
-		printf("Decoded: AND\n");
-		//executeAND();
+		execute_ALU(emulator);
 		break;
 	case BIT:
-		printf("Decoded: BIT\n");
-		//executeBIT();
+		execute_ALU(emulator);
 		break;
 	case BIC:
-		printf("Decoded: BIC\n");
-		//executeBIC();
+		execute_ALU(emulator);
 		break;
 	case BIS:
-		printf("Decoded: BIS\n");
-		//executeBIS();
+		execute_ALU(emulator);
 		break;
 	case MOV:
-		printf("Decoded: MOV\n");
-		//executeMOV();
+		execute_ALU(emulator);
 		break;
 	case SWAP:
-		printf("Decoded: SWAP\n");
-		//executeSWAP();
+		execute_ALU(emulator);
 		break;
 	case SRA:
-		printf("Decoded: SRA\n");
-		//executeSRA();
+		execute_REG(emulator);
 		break;
 	case RRC:
-		printf("Decoded: RRC\n");
-		//executeRRC();
+		execute_REG(emulator);
 		break;
 	case SWPB:
-		printf("Decoded: SWPB\n");
-		//executeSWPB();
+		execute_REG(emulator);
 		break;
 	case SXT:
-		printf("Decoded: SXT\n");
-		//executeSXT();
+		execute_REG(emulator);
 		break;
 	default:
-		printf("ERROR\n");
+		db_error(emulator, BAD_EXE);
 		break;
 	}
 }
 
-enum instType decode_type(void)
+void maintenance(Emulator *emulator)
 {
+	/*
+	Purpose:	Performs  the various per-cycle checks required by the CPU
+	Input:      Emulator pointer
+	Output:     None
+	*/
+	
+	// create some fresh local pointers
+	CPU *cpu = emulator->cpu;
+	Debugger *deb = emulator->debugger;
+	Next_Event *n_e = (Next_Event *)calloc(1, sizeof(Next_Event));
 
-    if (CHECK_BIT(IR, 15)
-    {
-        // decode LDST & MOV type instructions 
-        if (!CHECK_BIT(IR, 14) && CHECK_BIT(IR, 13))
-        {
-            return MOV;
-        }
-        else if (!CHECK_BIT(IR, 14) && CHECK_BIT(IR, 12))
-        {
-            return MOV;
-        }
-        else return LDST;
-    }
-    else 
-    {
-        if (!CHECK_BIT(IR, 14))
-        {
-            // identify branching instructions
-            return BRANCHING;
-        }
-        else
-        {
-            if (CHECK_BIT(IR, 8))
-            {
-                // identify register control instructions
-                return REGCON;
-            }
-            else return ALU;
-        }
-       
-    }
-
-    return;
-}
-
-enum instMnem decode_mnemonic(enum instType type)
-{
-    enum instMnem mnemonic;
-
-    return mnemonic;
-}
-
-enum instMnem decode_LDST(void)
-{
-    if (CHECK_BIT(IR, 14))      // 1X
-    {
-        if (CHECK_BIT(IR, 13))  // 11X
-            return STR;         // 111
-        else return LDR;        // 110
-    }
-    else
-    {
-        if (CHECK_BIT(IR, 11))  // 1000X
-            return ST;          // 10001
-        else return LD;         // 10000
-    }
-}
-
-enum instMnem decode_MOV(void)
-{
-    if (CHECK_BIT(IR, 13))      // 10X
-    {
-        return MOVH;            // 101
-    }
-    else
-    {
-        if (CHECK_BIT(IR, 11))  // 1001X
-            return MOVLZ;       // 10011
-        else return MOVL;       // 10010
-    }
-}
-
-enum instMnem decode_BRANCHING(void)
-{
-	if (CHECK_BIT(IR, 13)) {
-		//bit 13 set
-
-		if (CHECK_BIT(IR, 12)) {
-			//bit 12 set
-
-			if (CHECK_BIT(IR, 11)) {
-				//bit 11 set
-
-				if (CHECK_BIT(IR, 10)) {
-					//bit 10 set
-					return BAL;
-				}
-				else {
-					//bit 10 not set
-					return BLT;
-				}
-			}
-			else {
-				//bit 11 not set
-
-				if (CHECK_BIT(IR, 10)) {
-					//bit 10 set
-					return BGE;
-				}
-				else {
-					//bit 10 not set
-					return BN;
-				}
-			}
-		}
-		else {
-			//bit 12 not set
-			
-			if (CHECK_BIT(IR, 11)) {
-				//bit 11 set
-
-				if (CHECK_BIT(IR, 10)) {
-					//bit 10 set
-					return BNC;
-				}
-				else {
-					//bit 10 not set
-					return BC;
-				}
-			}
-			else {
-				//bit 11 not set
-
-				if (CHECK_BIT(IR, 10)) {
-					//bit 10 set
-					return BNE;
-				}
-				else {
-					//bit 10 not set
-					return BEQ;
-				}
-			}
-		}
-	}
-	else
+	// check breakpoints
+	if (deb->bp_flag == true)
 	{
-		//bit 13 not set
-		return BL;
-	}
-}
+		for (int i = 0; i < deb->bp_count; i++)
+		{
+			if (PC == deb->bp_addresses[i])
+			{
+				cpu->running = false;
+				deb->debug_mode = true;
 
-enum instMnem decode_ALU(void)
-{
-    	if (CHECK_BIT(IR, 12)) {
-		//bit 12 set
-
-		if (CHECK_BIT(IR, 11)) {
-			//bit 11 set
-			return SWAP;
-		}
-		else {
-			//bit 11 not set
-			
-			if (CHECK_BIT(IR, 10)) {
-				//bit 10 set
-
-				if (CHECK_BIT(IR, 9)) {
-					//bit 9 set
-					return MOV;
-				}
-				else {
-					//bit 9 not set
-					return BIS;
-				}
-			}
-			else {
-				//bit 10 not set
-
-				if (CHECK_BIT(IR, 9)) {
-					//bit 9 set
-					return BIC;
-				}
-				else {
-					//bit 9 not set
-					return BIT;
-				}
+				printf("\n\nBreakpoint #%d hit", i + 1);
 			}
 		}
 	}
-	else {
-		//bit 12 not set
-
-		if (CHECK_BIT(IR, 11)) {
-			//bit 11 set
-
-			if (CHECK_BIT(IR, 10)) {
-				//bit 10 set
-
-				if (CHECK_BIT(IR, 9)) {
-					//bit 9 set
-					return AND;
-				}
-				else {
-					//bit 9 not set
-					return XOR;
-				}
-			}
-			else {
-				//bit 10 not set
-
-				if (CHECK_BIT(IR, 9)) {
-					//bit 9 set
-					return CMP;
-				}
-				else {
-					//bit 9 not set
-					return DADD;
-				}
-			}
-		}
-		else {
-			//bit 11 not set
-
-			if (CHECK_BIT(IR, 10)) {
-				//bit 10 set
-
-				if (CHECK_BIT(IR, 9)) {
-					//bit 9 set
-					return SUBC;
-				}
-				else {
-					//bit 9 not set
-					return SUB;
-				}
-			}
-			else {
-				//bit 10 not set
-
-				if (CHECK_BIT(IR, 9)) {
-					//bit 9 set
-					return ADDC;
-				}
-				else {
-					//bit 9 not set
-					return ADD;
-				}
-			}
-		}
+	
+	// check devices
+	if (deb->device_flag == true)
+	{
+		dev_i_check(emulator);
+		dev_o_check(emulator);
 	}
-}
 
-enum instMnem decode_REGCON(void)
-{
-    if (CHECK_BIT(IR, 10)) {
-		//bit 10 set
+	display_regs(emulator);
+	if (deb->device_flag) display_devs(emulator);
+	
+	emulator->cpu->SYSCLK++;
 
-		if (CHECK_BIT(IR, 9)) {
-			//bit 9 set
-			return SXT;
-		}
-		else {
-			//bit 9 not set
-			return SWPB;
-		}
-	}
-	else {
-		//bit 10 not set
-
-		if (CHECK_BIT(IR, 9)) {
-			//bit 9 set
-			return RRC;
-		}
-		else {
-			//bit 9 not set
-			return SRA;
-		}
-	}
-=======
-/*
-- Emulator of the X-Makina ISA
-- ECED3403 Assignment 2
-- CPU mainline
-- Finlay Miller B00675696
-- 29 June 2018
-*/
-
-void fetch(void)
-{
-
->>>>>>> 278da0870bc211b7e3ccb4e0cda1249e0ec582e5
+	return;
 }

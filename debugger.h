@@ -1,104 +1,78 @@
-<<<<<<< HEAD
 /*
-- S-record Loader for the X-Makina Project
+- Emulator of the X-Makina ISA
 - ECED3403 Assignment 2
-- Debugger header file
+- Debugger headerfile
 - Finlay Miller B00675696
-- 29 June 2018
+- 19 July 2018
 */
 
 #ifndef _DEBUGGER_H_
 #define _DEBUGGER_H_
 
-#include <stdio.h>
+// libraries
 #include <stdlib.h>
-#include <string.h>
-#include <errno.h>
+#include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
+
+// other files
 #include "main.h"
+#include "loader.h"
+#include "storage.h"
+#include "devices.h"
+#include "utilities.h"
 
-#define MAX_FILENAME 255
-
-typedef struct Debugger
-{
-	bool disassemble_mode;
-	bool devices;
-	bool debug_mode;
-	bool quit;
-
-	enum BP_TYPE { LINE, CLOCK } BP_TYPE;
-	unsigned int marker;
-} Debugger;
-
-enum DEBUG_ERRORS
-{
-	BAD_FILETYPE,
-	NO_FILES
-};
-
-char *err_diag_d[] =
-{
-	(char *) "\nInvalid input file - .xme type required",
-	(char *) "\nNo input files provided",
-	(char *) "\nInvalid S rec - detected an S record not of type 0, 1, or 9",
-	(char *) "\nInvalid S rec - bad record type",
-	(char *) "\nInvalid S rec - error in checksum",
-};
-
-void debug_error(enum DEBUG_ERRORS err);
-int run_debugger(Emulator *emulator);
-
-=======
-/*
-- S-record Loader for the X-Makina Project
-- ECED3403 Assignment 2
-- Debugger header file
-- Finlay Miller B00675696
-- 29 June 2018
-*/
-
-#ifndef _DEBUGGER_H_
-#define _DEBUGGER_H_
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
-#include <stdbool.h>
-
-#define MAX_FILENAME 255
+#define MAX_BREAKPOINTS 255
 
 typedef struct Debugger
-{
-	bool disassemble_mode;
-	bool devices;
-	bool debug_mode;
-	bool quit;
+{	
+	// flags
+	bool debug_mode;	// set when debug mode is selected by the user
+	bool bp_flag;		// set when a breakpoint is active
+	bool bp_type;		// set based on type of breakpoint
+	bool error_flag;	// set when an error is detected 
+	bool quit_flag;		// set when quit command is used
+	bool loading;		// set while loading s records and data
+	bool device_flag;	// set when device memory is accessed
 
-	enum BP_TYPE { LINE, CLOCK };
-	unsigned int marker;
+	// breakpoint data
+	unsigned short bp_addresses[MAX_BREAKPOINTS];
+	unsigned short bp;
+	signed   int   bp_count;
+}Debugger;
+
+// error message-related data
+enum DB_ERRORS
+{
+	BAD_EXE,
+	BAD_MRG,	// called from modify_regs
+	BAD_DEC,
+	DEC_LD,		// called from decode_MEMACCESS
+	DEC_LDR,	// called from decode_MEMACCESS
+	DEC_BRA_I,	// called from decode_BRA
+	DEC_BRA_II,	// called from decode_BRA
+	DEC_ALU_I,	// called from decode_ALU
+	DEC_ALU_II,	// called from decode_ALU
+	DEC_REG,	// called from decode_ALU
+	BAD_SRC,	// called from loader
+	BAD_DEV,	// called from loader
+	EXE_LD,		// called from execute_LDST
+	EXE_LDR,	// called from execute_LDRSTR
+	EODF,		// called from dev_get_event
+	BAD_LVL		// called from set_priority
 };
 
-enum DEBUG_ERRORS
-{
-	BAD_FILETYPE,
-	TOO_SHORT,
-	UNEXPECTED_TYPE,
-	BAD_TYPE,
-	BAD_CHECKSUM
-};
+// function declarations
+void debug(Emulator *emulator);
+int advance(Emulator *emulator);
+int modify_regs(Emulator *emulator);
+int display_regs(Emulator *emulator);
+int display_devs(Emulator *emulator);
+int db_init(Emulator *emulator);
+int set_breakpoints(Emulator *emulator);
+int quit(Emulator *emulator);
+void db_error(Emulator *emulator, enum DB_ERRORS);
+int clear_flags(Emulator *emulator);
+int help(void);
 
-char *err_diag_d[] =
-{
-	(char *) "\nInvalid input file - .xme type required",
-	(char *) "\nInvalid S rec - too short",
-	(char *) "\nInvalid S rec - detected an S record not of type 0, 1, or 9",
-	(char *) "\nInvalid S rec - bad record type",
-	(char *) "\nInvalid S rec - error in checksum",
-};
-
-void debug_error(enum DEBUG_ERRORS err);
-int run_debugger(Emulator *emulator);
-
->>>>>>> 278da0870bc211b7e3ccb4e0cda1249e0ec582e5
-#endif
+#endif // !_DEBUGGER_H_

@@ -1,10 +1,9 @@
-<<<<<<< HEAD
 /*
 - Emulator of the X-Makina ISA
 - ECED3403 Assignment 2
 - Mainline header file
 - Finlay Miller B00675696
-- 29 June 2018
+- 19 July 2018
 */
 
 #ifndef _MAIN_H_
@@ -14,106 +13,46 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <signal.h>
+#include <stdbool.h>
 #include <time.h>
 #include <errno.h>
-#include <stdbool.h>
 
-// definitions
-#define VERSION "0.1 (29 JUNE 2018)"
-#define LR 4	// link register
-#define SP 5	// stack pointer
-#define PSW 6	// program status word
-#define PC 7	// program counter
-
-// create new memory
-union Memory memory;
-
-// registerfile
-unsigned short regfile[8];
-
+// define structs
 typedef struct Emulator Emulator;
-
-// required custom files
-#include "loader.h"
-#include "cpu.h"
-#include "debugger.h"
-#include "memory.h"
-
-// inaccessible by programmer
-unsigned short MAR;
-unsigned short MDR;
-unsigned short IR;
-unsigned short TMP;
-enum RC { REG, CNST };
-
-struct Emulator
-{
-	Debugger *debugger;
-	CPU *cpu;
-	//Union Memory *memory;
-};
-
-=======
-/*
-- Emulator of the X-Makina ISA
-- ECED3403 Assignment 2
-- Mainline header file
-- Finlay Miller B00675696
-- 29 June 2018
-*/
-
-#ifndef _MAIN_H_
-#define _MAIN_H_
-
-// required standard libraries
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <signal.h>
-#include <time.h>
-#include <errno.h>
-#include <stdbool.h>
-
-// required emulator files
-#include "loader.h"
-#include "cpu.h"
-#include "debugger.h"
-#include "memory.h"
-
-// definitions
-#define VERSION "0.1 (29 JUNE 2018)"
-// register declaration
-#define LR 4
-#define SP 5
-#define PSW 6
-#define PC 7
-
-// create new memory
-union Memory memory;
-
-// registerfile
-unsigned short regfile[8];
-
-// inaccessible by programmer
-unsigned short MAR;
-unsigned short MDR;
-unsigned short IR;
-unsigned short TMP;
-enum RC { REG, CNST };
-
-// Typedefs so I don't have to keep writing struct
-typedef struct CPU CPU;
-typedef struct Storage Storage;
 typedef struct Debugger Debugger;
-typedef struct Emulator Emulator;
+typedef struct CPU CPU;
+typedef struct Device Device;
+typedef struct Next_Event Next_Event;
+
+// other files
+#include "debugger.h"
+#include "cpu.h"
+#include "storage.h"
+#include "devices.h"
+#include "utilities.h"
+
+// definitions
+#define VERSION "0.3 (04 JULY 2018)"
+#define MAX_FILE_LEN 255
+#define DEVCNT 8
+
+extern bool waiting_for_signal;
 
 struct Emulator
 {
+	// component structures
 	Debugger *debugger;
 	CPU *cpu;
-	Memory *memory;
-};
+	Device *device[DEVCNT];
+	Next_Event *n_e;
 
->>>>>>> 278da0870bc211b7e3ccb4e0cda1249e0ec582e5
-#endif
+	// flags
+	bool waiting_for_signal;
+
+	// filenames
+	char ifile[MAX_FILE_LEN];
+	char ofile[MAX_FILE_LEN];
+	char dfile[MAX_FILE_LEN];
+	long int df_pos;	// position in device file, used for fseek
+};
+#endif // !_MAIN_H_

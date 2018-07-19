@@ -1,116 +1,66 @@
-<<<<<<< HEAD
 /*
 - Emulator of the X-Makina ISA
 - ECED3403 Assignment 2
 - CPU headerfile
 - Finlay Miller B00675696
-- 29 June 2018
+- 19 July 2018
 */
 
 #ifndef _CPU_H_
 #define _CPU_H_
 
+// libraries
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <signal.h>
 #include <stdbool.h>
 
-//check if bit "pos" is set in "var"
-#define CHECK_BIT(var, pos) ((var) & (1<<(pos)))
+// other files
+#include "main.h"
+#include "storage.h"
+#include "debugger.h"
+#include "execute_functions.h"
+#include "decode_functions.h"
+#include "bus.h"
+#include "devices.h"
 
-//set bit "pos" in "var"
-#define SET_BIT(var, pos) ((var) |= (1<<(pos)))
+// print data as binary macros
+#define PRINTF_BINARY_PATTERN_INT8 "%c%c%c%c%c%c%c%c"
+#define PRINTF_BYTE_TO_BINARY_INT8(data)    \
+    (((data) & 0x80ll) ? '1' : '0'), \
+    (((data) & 0x40ll) ? '1' : '0'), \
+    (((data) & 0x20ll) ? '1' : '0'), \
+    (((data) & 0x10ll) ? '1' : '0'), \
+    (((data) & 0x08ll) ? '1' : '0'), \
+    (((data) & 0x04ll) ? '1' : '0'), \
+    (((data) & 0x02ll) ? '1' : '0'), \
+    (((data) & 0x01ll) ? '1' : '0')
 
-//define PSW bit numbers
-#define C 0
-#define Z 1
-#define N 2
-#define SLP 3
-#define V 4
+#define PRINTF_BINARY_PATTERN_INT16 \
+    PRINTF_BINARY_PATTERN_INT8 PRINTF_BINARY_PATTERN_INT8
+#define PRINTF_BYTE_TO_BINARY_INT16(data) \
+    PRINTF_BYTE_TO_BINARY_INT8((data) >> 8), PRINTF_BYTE_TO_BINARY_INT8(data)
 
-// CPU structure
+// CPU object
 typedef struct CPU
 {
+	// flags
 	bool running;
 	bool sleeping;
-	unsigned int clock;
+
+	// variables
+	signed int PRIORITY;// cpu priority level
+	signed int SYSCLK;	// system clock counter
+	signed int END;		// max system clock amount
 } CPU;
 
-// instruction types
-enum instType { LDST, MOV, BRANCHING, ALU, REGCON };
-
-// instruction mnemonics
-enum instMnem
-{
-	LD, ST, LDR, STR, MOVL, MOVLZ, MOVH,
-	BL, BEQBZ, BNEBNZ, BCBHS, BNCBLO, BN,
-	BGE, BLT, BAL, ADD, ADDC, SUB, SUBC,
-	DADD, CMP, XOR, AND, BIT, BIC, BIS,
-	MOV, SWAP, SRA, RRC, SWPB, SXT
-};
-enum instMnem iMnemonic;
-
 // function declarations
-void fetch(void);
-void decode(void);
-void execute(void);
-enum instType decode_type(void);
-enum instMnem decode_LDST(void);
-enum instMnem decode_MOV(void);
-enum instMnem decode_BRANCHING(void);
-enum instMnem decode_ALU(void);
-enum instMnem decode_REGCON(void);
+void run(Emulator *emulator);
+void fetch(Emulator *emulator);
+void decode(Emulator *emulator);
+void execute(Emulator *emulator);
+void maintenance(Emulator *emulator);
 
-=======
-/*
-- Emulator of the X-Makina ISA
-- ECED3403 Assignment 2
-- CPU headerfile
-- Finlay Miller B00675696
-- 29 June 2018
-*/
-
-#ifndef _CPU_H_
-#define _CPU_H_
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
-#include <stdbool.h>
-
-// CPU structure
-typedef struct CPU
-{
-	bool running;
-	bool sleeping;
-	unsigned int clock;
-};
-
-// instruction types
-enum insttype
-{
-	ALU,
-	BRANCHING,
-	LDSTMOV,
-	BIT
-};
-
-// instruction mnemonics
-enum instmnem
-{
-	LD, ST, LDR, STR, MOVL, MOVLZ, MOVH,
-	BL, BEQBZ, BNEBNZ, BCBHS, BNCBLO, BN,
-	BGE, BLT, BAL, ADD, ADDC, SUB, SUBC,
-	DADD, CMP, XOR, AND, BIT, BIC, BIS,
-	MOV, SWAP, SRA, RRC, SWPB, SXT
-};
-
-// function declarations
-void fetch(void);
-void decode(void);
-void execute(void);
-
->>>>>>> 278da0870bc211b7e3ccb4e0cda1249e0ec582e5
 #endif

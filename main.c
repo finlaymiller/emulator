@@ -1,101 +1,61 @@
-<<<<<<< HEAD
 /*
 - Emulator of the X-Makina ISA
 - ECED3403 Assignment 2
 - Emulator mainline
 - Finlay Miller B00675696
-- 29 June 2018
+- 19 July 2018
 */
 
 #include "main.h"
+#define DEBUG
 
-// TODO
-// MAKE MASKING FUNCTION
-// USE MASKING FUNCTION TO IMPROVE DECODE MNEMONIC FUNCTIONS
-// ADD DECODER FUNCTIONS
-// ADD EXECUTE FUNCTIONS
-// ADD DEVICE SUPPORT
-// ADD INTERRUPT SUPPORT
+// initialize global memory
+union Memory memory;
+unsigned short regfile[RorC][reg_count];
+unsigned short MAR = 0;
+unsigned short MBR = 0;
+unsigned short IR = 0;
+unsigned short TMP = 0;
+
+bool waiting_for_signal;
 
 int main(void)
 {
 	/*
-	Purpose:    
+	Purpose:	Create objects, start global program timer,
+				initialize debugger and start cpu
 	Input:      None
 	Output:     Execution status
 	*/
 
-	int status = 0;
-	char inputfile[60];
-
-	// startup prints
-	printf("X Makina Emulator Version %s", VERSION);
-	printf("Finlay Miller B00675696");
-
 	// setup timer
 	clock_t start = clock();
-
-	Emulator *emulator;
-	CPU *cpu = NULL;
+	// create structs & allocate memory
+	Emulator *emulator = (Emulator *)calloc(1, sizeof(Emulator));
 	Debugger *debugger = NULL;
+	CPU *cpu = NULL;
+	Device *device[DEVCNT] = { NULL };
+	Next_Event *n_e = NULL;
+	emulator->debugger = (Debugger *)calloc(1, sizeof(Debugger));
+	emulator->cpu      = (CPU *)calloc(1, sizeof(CPU));
+	for (int i = 0; i < DEVCNT; i++) 
+		emulator->device[i] = (Device *)calloc(1, sizeof(Device));
+	emulator->n_e = (Next_Event *)calloc(1, sizeof(Next_Event));
 
-	emulator->cpu = (CPU *) calloc(1, sizeof(CPU));
-  	emulator->debugger  = (Debugger *) calloc(1, sizeof(Debugger));
-  	cpu = emulator->cpu;
-  	debugger = emulator->debugger;
+	// startup print
+	printf("X Makina Emulator Version %s\n", VERSION);
 
-	//status = run_debugger(emulator);
-	printf("\nInput filename:\t");
-	scanf("%s", inputfile);
-
-	loader(inputfile, NULL);
+	db_init(emulator);	// start debugger
+	run(emulator);		// run CPU
 
 	// end timer & print runtime
 	clock_t end = clock();
 	double total = (double)start - end / CLOCKS_PER_SEC;
-	printf("\nProgram completed in %lf seconds.", total);
 
-	return status;
-=======
-/*
-- Emulator of the X-Makina ISA
-- ECED3403 Assignment 2
-- Emulator mainline
-- Finlay Miller B00675696
-- 29 June 2018
-*/
+	printf("\nProgram completed in %d ms.\n", (int)total);
 
-#include "main.h"
+	// endless loop
+	while (waiting_for_signal);
 
-int main(void)
-{
-	/*
-	Purpose:    
-	Input:      None
-	Output:     Execution status
-	*/
-
-	int status = 0;
-
-	// startup prints
-	printf("X Makina Emulator Version %s", VERSION);
-	printf("Finlay Miller B00675696");
-
-	// setup timer
-	clock_t start = clock();
-
-	Emulator *emulator;
-	CPU *cpu = NULL;
-	Debugger *debugger = NULL;
-	Storage *storage = NULL;
-
-	status = run_debugger(emulator);
-
-	// end timer & print runtime
-	clock_t end = clock;
-	double total = (double)start - end / CLOCKS_PER_SEC;
-	printf("\nProgram completed in %lf seconds.", total);
-
-	return status;
->>>>>>> 278da0870bc211b7e3ccb4e0cda1249e0ec582e5
+	exit(EXIT_SUCCESS);
 }
