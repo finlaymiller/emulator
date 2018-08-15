@@ -44,9 +44,9 @@ int db_init(Emulator *emulator)
 	}
 
 #ifdef DEBUG
-	strcpy(emulator->ifile, "PolledDevices.xme");
-	strcpy(emulator->ofile, "out.txt");
-	strcpy(emulator->dfile, "dev_in_test.txt");
+	strcpy(emulator->ifile, "ct.xme");
+	//strcpy(emulator->ofile, "out.txt");
+	//strcpy(emulator->dfile, "dev_in_test.txt");
 #endif // DEBUG
 
 	// load data into memory
@@ -178,7 +178,7 @@ int display_regs(Emulator *emulator)
 	CPU *cpu = emulator->cpu;
 
 	printf("\n");
-	printf("\t\t\tSYSCLK = %d", cpu->SYSCLK);
+	printf("\t\t    PC = 0x%x SYSCLK = %d", PC, cpu->SYSCLK);
 	printf("\n--------------------- USER ACCESSIBLE ---------------------");
 	for (int i = 0; i < reg_count; i++)
 	{
@@ -228,7 +228,7 @@ int set_breakpoints(Emulator *emulator)
 	char view_conf[2];	// only really matters if 'y' is entered
 	int *temp_bool = 0;
 
-	printf("\n\nSettings breakpoints:\n Enter 0 to break on memory address or 1 to break on clock time\n> ");
+	printf("\nSetting breakpoints:\n Enter 0 to break on memory address or 1 to break on clock time\n> ");
 	scanf("%d", temp_bool);
 
 	if (temp_bool) deb->bp_flag = true;	// There must be a better way of doing this...
@@ -243,7 +243,7 @@ int set_breakpoints(Emulator *emulator)
 		else printf("\nLocation-based breakpoint selected.");
 
 		printf(" Enter the first marker to break at or -1 to exit\n> ");
-		scanf("%hu", (unsigned short)deb->bp);
+		scanf("%d", (int *)deb->bp);
 		if (deb->bp >= 0) deb->bp_addresses[deb->bp_count++] = deb->bp;
 	}
 
@@ -478,8 +478,6 @@ void set_bits(mi_ALU inst, unsigned short result)
 	if (overflow[mss][msd][msr]) printf("\tOverflow bit set");
 	else printf("\tOverflow bit cleared");
 #endif // DEBUG
-
-
 
 	return;
 }

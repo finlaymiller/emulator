@@ -7,7 +7,7 @@
 */
 
 #include "cpu.h"
-#define DEBUG
+//#define DEBUG
 
 void run(Emulator *emulator)
 {
@@ -21,7 +21,7 @@ void run(Emulator *emulator)
 	CPU *cpu = emulator->cpu;
 	Debugger *deb = emulator->debugger;
 
-	cpu->END = 200;
+	cpu->END = 300;
 	printf("\nRunning until time %d", cpu->END);
 
 	debug(emulator);
@@ -38,7 +38,6 @@ void run(Emulator *emulator)
 	}
 
 	cpu->running = false;
-	getchar(); getchar();
 	return;
 }
 
@@ -57,7 +56,7 @@ void fetch(Emulator *emulator)
 #endif // !DEBUG
 
 	// read from PC & store in instruction register
-	bus(emulator, WORD, READ);
+	check_cache(emulator, WORD, READ);
 	IR = MBR;
 
 #ifdef DEBUG
@@ -237,9 +236,11 @@ void maintenance(Emulator *emulator)
 		dev_o_check(emulator);
 	}
 
+#ifdef DEBUG
 	display_regs(emulator);
 	if (deb->device_flag) display_devs(emulator);
-	
+#endif // DEBUG
+
 	emulator->cpu->SYSCLK++;
 
 	return;

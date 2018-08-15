@@ -7,7 +7,6 @@
 */
 
 #include "bus.h"
-
 #define DEBUG
 
 void bus(Emulator *emulator, enum SIZE BW, enum ACTION RW)
@@ -24,6 +23,12 @@ void bus(Emulator *emulator, enum SIZE BW, enum ACTION RW)
 	Device *dev[DEVCNT] = { NULL };
 	for (int i = 0; i < DEVCNT; i++)
 		dev[i] = emulator->device[i];
+
+#ifdef DEBUG
+	printf("\nBus called with settings:\n%s, %s, MAR = 0x%x, MBR = 0x%x",
+		(BW) ? "BYTE" : "WORD", (RW) ? "READ" : "WRITE", MAR, MBR);
+#endif // DEBUG
+
 
 	if (MAR < 16)
 	{

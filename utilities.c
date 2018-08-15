@@ -1,6 +1,6 @@
 
 #include "utilities.h"
-#define DEBUG
+//#define DEBUG
 
 void handle_sigint(Emulator *emulator)
 {
@@ -51,6 +51,33 @@ void init_structs(Emulator *emulator)
 	// cpu data
 	emulator->cpu->SYSCLK = 0;
 	emulator->cpu->END = 0;
+
+	// cache data
+	for (int i = 0; i < CACHE_SIZE; i++)
+	{
+#ifdef HYBRID
+		emulator->cache->cache_mem[i].addr.bits.page = 0;
+		emulator->cache->cache_mem[i].addr.bits.line = 0;
+#else
+		emulator->cache->cache_mem[i].addr.address = 0;
+#endif // HYBRID
+		emulator->cache->cache_mem[i].contents = 0;
+		emulator->cache->cache_mem[i].dirty_bit = 0;
+
+#ifndef DIRECT
+		emulator->cache->cache_mem[i].age = i;
+#endif // !DIRECT
+
+
+	}
+	// cache flags
+	emulator->cache->hit = false;
+	emulator->cache->rewr = false;
+	emulator->cache->woby = false;
+	// clear cache output file
+	strcpy(emulator->cfile, "final_cache.txt");
+	FILE *cf = fopen(emulator->cfile, "w");
+	fclose(cf);
 
 	return;
 }

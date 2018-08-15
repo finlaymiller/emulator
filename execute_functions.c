@@ -53,10 +53,11 @@ void execute_LDST(Emulator *emulator)
 		// send source data to destination
 #ifdef DEBUG
 		printf("\nLoading from R%d mem[0x%x] to R%d (0x%x)", EA, regfile[0][EA], DST, regfile[0][DST]);
+		printf("\nCharacter: %c", regfile[0][DST]);
 #endif
 		MAR = regfile[0][EA];
 		MBR = regfile[0][maskedInst.dst];
-		bus(emulator, maskedInst.wb, READ);
+		check_cache(emulator, maskedInst.wb, READ);
 
 		// preserve upper byte of register if instruction specifies byte operation
 		regfile[0][maskedInst.dst] &= HI_BYTE;
@@ -100,7 +101,7 @@ void execute_LDST(Emulator *emulator)
 #endif
 		MAR = regfile[0][EA];
 		MBR = regfile[0][maskedInst.src];
-		bus(emulator, maskedInst.wb, WRITE);
+		check_cache(emulator, maskedInst.wb, WRITE);
 
 		// handle post-increment or post-decrement
 		if (maskedInst.prpo == 0)
@@ -166,7 +167,7 @@ void execute_LDRSTR(Emulator *emulator)
 			// get registers required by bus function ready
 			MAR = EA;
 			MBR = regfile[0][maskedInst.src];
-			bus(emulator, maskedInst.wb, WRITE);
+			check_cache(emulator, maskedInst.wb, WRITE);
 #ifdef DEBUG
 			printf("\nStored to mem[EA] = "PRINTF_BINARY_PATTERN_INT16, PRINTF_BYTE_TO_BINARY_INT16(memory.word[EA]));
 #endif // DEBUG
@@ -177,11 +178,12 @@ void execute_LDRSTR(Emulator *emulator)
 			EA = regfile[0][maskedInst.src] + TMP;
 #ifdef DEBUG
 			printf("\nLoading from mem[EA] = "PRINTF_BINARY_PATTERN_INT16, PRINTF_BYTE_TO_BINARY_INT16(memory.word[EA]));
+			printf("\nCharacter: %c", regfile[0][DST]);
 #endif // DEBUG
 			// get registers required by bus function ready
 			MAR = EA;
 			MBR = regfile[0][maskedInst.dst];
-			bus(emulator, maskedInst.wb, READ);
+			check_cache(emulator, maskedInst.wb, READ);
 
 			// preserve upper byte of register if instruction specifies byte operation
 			if (maskedInst.wb == 1) regfile[0][maskedInst.dst] &= 0xFF00;
@@ -614,4 +616,3 @@ void execute_AND(Emulator *emulator, mi_ALU inst)
 
 	return;
 }
-

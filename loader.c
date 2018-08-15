@@ -7,7 +7,7 @@
 */
 
 #include "loader.h"
-#define DEBUG
+//#define DEBUG
 
 int loader(Emulator *emulator)
 {

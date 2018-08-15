@@ -7,7 +7,7 @@
 */
 
 #include "decode_functions.h"
-#define DEBUG
+//#define DEBUG
 
 enum inst decode_inst(Emulator *emulator)
 {

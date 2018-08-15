@@ -30,10 +30,12 @@ int main(void)
 
 	// setup timer
 	clock_t start = clock();
+
 	// create structs & allocate memory
 	Emulator *emulator = (Emulator *)calloc(1, sizeof(Emulator));
 	Debugger *debugger = NULL;
 	CPU *cpu = NULL;
+	Cache *cache = NULL;
 	Device *device[DEVCNT] = { NULL };
 	Next_Event *n_e = NULL;
 	emulator->debugger = (Debugger *)calloc(1, sizeof(Debugger));
@@ -41,6 +43,7 @@ int main(void)
 	for (int i = 0; i < DEVCNT; i++) 
 		emulator->device[i] = (Device *)calloc(1, sizeof(Device));
 	emulator->n_e = (Next_Event *)calloc(1, sizeof(Next_Event));
+	emulator->cache = (Cache *)calloc(1, sizeof(Cache));
 
 	// startup print
 	printf("X Makina Emulator Version %s\n", VERSION);
@@ -52,10 +55,14 @@ int main(void)
 	clock_t end = clock();
 	double total = (double)start - end / CLOCKS_PER_SEC;
 
+	display_cache(emulator);
+	display_regs(emulator);
+
 	printf("\nProgram completed in %d ms.\n", (int)total);
 
 	// endless loop
 	while (waiting_for_signal);
+	getchar(); getchar();
 
 	exit(EXIT_SUCCESS);
 }

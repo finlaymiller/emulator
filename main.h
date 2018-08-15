@@ -23,6 +23,7 @@ typedef struct Debugger Debugger;
 typedef struct CPU CPU;
 typedef struct Device Device;
 typedef struct Next_Event Next_Event;
+typedef struct Cache Cache;
 
 // other files
 #include "debugger.h"
@@ -30,6 +31,7 @@ typedef struct Next_Event Next_Event;
 #include "storage.h"
 #include "devices.h"
 #include "utilities.h"
+#include "cache.h"
 
 // definitions
 #define VERSION "0.3 (04 JULY 2018)"
@@ -45,14 +47,17 @@ struct Emulator
 	CPU *cpu;
 	Device *device[DEVCNT];
 	Next_Event *n_e;
+	Cache *cache;
 
 	// flags
 	bool waiting_for_signal;
+	bool accessed_cache;
 
 	// filenames
 	char ifile[MAX_FILE_LEN];
 	char ofile[MAX_FILE_LEN];
 	char dfile[MAX_FILE_LEN];
+	char cfile[MAX_FILE_LEN];
 	long int df_pos;	// position in device file, used for fseek
 };
 #endif // !_MAIN_H_
